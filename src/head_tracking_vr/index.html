@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A-frame VR Display</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+</head>
+<body>
+    <a-scene>
+        <!-- Define the camera entity with look controls -->
+        <a-entity id="camera" camera look-controls position="0 1.6 0"></a-entity>
+        <!-- Add objects in the scene for reference -->
+        <a-box position="-2.696 2.107 -6.948" rotation="0 45 0" color="#4CC3D9"></a-box>
+        
+        <a-box position="2.569 0.5 -6.536" rotation="0 45 0" color="#097969"></a-box>
+
+        <a-box position="0 0.5 -3" rotation="0 45 0" color="#FF5733"></a-box>
+
+        <a-plane position="0 0 -3" width="20" height="20" rotation="-90 0 0" color="#FFC300"></a-plane>
+        <!-- Set the sky color -->
+        <a-sky color="#ECECEC"></a-sky>
+    </a-scene>
+
+    <script>
+        // Create a WebSocket connection to the server
+        let ws = new WebSocket('ws://localhost:8000');
+        let camera = document.getElementById('camera');
+        
+        ws.onopen = function() {
+            console.log("Connected to WebSocket server");
+        };
+
+        // Handle incoming messages from the WebSocket
+        ws.onmessage = function(event) {
+            try {
+                console.log(event.data)
+
+                // Parse the JSON data received
+                let data = JSON.parse(event.data);
+                let position = data.position;
+                let rotation = data.rotation;
+
+                // Ensure the received data is valid
+                if (position && rotation && position.length === 3 && rotation.length === 3) {
+                    // Update the camera's position
+                    camera.setAttribute('position', {
+                        x: position[0] * 0.01,
+                        y: position[1] * 0.01,
+                        z: -position[2] * 0.01 // Inverting z-axis for correct orientation in A-Frame
+                    });
+
+                    // Update the camera's rotation (converting radians to degrees)
+                    camera.setAttribute('rotation', {
+                        x: THREE.Math.radToDeg(rotation[1]), // Pitch
+                        y: THREE.Math.radToDeg(rotation[2]), // Yaw
+                        z: THREE.Math.radToDeg(rotation[0])  // Roll
+                    });
+                } else {
+                    console.warn('Received invalid data:', data);
+                }
+            } catch (error) {
+                console.error('Error parsing WebSocket message:', error);
+            }
+        };
+    </script>
+</body>
+</html>
