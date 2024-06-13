@@ -62,6 +62,7 @@ Example: http://localhost:8080
 ```
 jupyter notebook
 ```
+> This applies to activities too.
 
 ## 📚 References
 
